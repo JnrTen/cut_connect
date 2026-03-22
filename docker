@@ -1,0 +1,32 @@
+# Dockerfile for PHP with Apache
+FROM php:8.2-apache
+
+# Install required extensions for PostgreSQL and MySQL
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    libsqlite3-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql pdo_sqlite \
+    && docker-php-ext-install mysqli
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy all files to Apache document root
+COPY . /var/www/html/
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Configure Apache to serve from current directory
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Create uploads directory and set permissions
+RUN mkdir -p /var/www/html/uploads \
+    && chmod -R 777 /var/www/html/uploads
+
+# Expose port 80
+EXPOSE 80
